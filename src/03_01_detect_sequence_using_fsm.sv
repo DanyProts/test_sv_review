@@ -4,7 +4,7 @@
 
 module detect_4_bit_sequence_using_fsm
 (
-  input  clk,
+  input  clc,
   input  rst,
   input  a,
   output detected
@@ -50,7 +50,7 @@ module detect_4_bit_sequence_using_fsm
   assign detected = (state == S0);
 
   // State update
-  always_ff @ (posedge clk)
+  always_ff @ (posedge clc)
     if (rst)
       state <= IDLE;
     else
@@ -64,7 +64,7 @@ endmodule
 
 module detect_6_bit_sequence_using_fsm
 (
-  input  clk,
+  input  clс,
   input  rst,
   input  a,
   output detected
