@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/config",
+  "api_url": "https://termly-terrific-bustard.cloudpub.ru/analysis/naming/upload",
+  "max_depth": 300,
+  "max_nodes": 20000,
+  "include_tokens": false,
+  "exclude": [
+    "third_party/**",
+    "vendor/**"
+  ],
+  "rules": {
+    "PORT_UPPERCASE": {
+      "severity": "error",
+      "doc": "https://company-wiki.local/naming#ports"
+    },
+    "INSTANCE_PREFIX": {
+      "severity": "warning",
+      "doc": "https://company-wiki.local/naming#instances"
+    },
+    "RESET_STYLE_CRITICAL": {
+      "severity": "error",
+      "doc": "https://company-wiki.local/naming#reset"
+    }
+  },
+  "documentation": {
+    "overview": "https://company-wiki.local/naming",
+    "default": "https://company-wiki.local/naming/rules"
+  },
+  "artifact_name": "verilog-review-report.txt"
+}
+

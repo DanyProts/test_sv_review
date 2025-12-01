@@ -1,0 +1,104 @@
+name: Verilog Review
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "src/**/*.sv"
+      - ".github/workflows/verilog-review.yml"
+      - "scripts/verilog_review.py"
+      - ".verilog-review.json"
+  pull_request:
+    paths:
+      - "src/**/*.sv"
+      - ".github/workflows/verilog-review.yml"
+      - "scripts/verilog_review.py"
+      - ".verilog-review.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      REVIEW_CONFIG: .verilog-review.json
+      REVIEW_REPORT: artifacts/verilog-review-report.txt
+      REVIEW_SUMMARY: artifacts/verilog-review-summary.md
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip requests
+
+      - name: Determine SystemVerilog files
+        id: files
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE_LIST=sv-files.txt
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Для PR: только изменённые файлы относительно базовой ветки
+            git diff --name-only --diff-filter=AMR \
+              origin/${{ github.base_ref }}...${{ github.sha }} -- '*.sv' > "$FILE_LIST" || true
+          else
+            # Для push: только изменённые файлы в последнем коммите
+            # Если это первый коммит, используем все файлы из коммита
+            if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+              git diff --name-only --diff-filter=AMR HEAD~1 HEAD -- '*.sv' > "$FILE_LIST" || true
+            else
+              git diff --name-only --diff-filter=AMR --root HEAD -- '*.sv' > "$FILE_LIST" || true
+            fi
+          fi
+
+          # Фильтруем только файлы из папки src/ (рекурсивно)
+          if [[ -s "$FILE_LIST" ]]; then
+            grep '^src/.*\.sv$' "$FILE_LIST" > "${FILE_LIST}.tmp" || true
+            mv "${FILE_LIST}.tmp" "$FILE_LIST"
+          fi
+
+          mapfile -t files < "$FILE_LIST" || true
+          if [[ ${#files[@]} -eq 0 ]] || [[ ! -s "$FILE_LIST" ]]; then
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "Нет файлов .sv в папке src/ для проверки."
+          else
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+            printf 'Файлы для анализа из src/ (%s):\n' "${#files[@]}"
+            printf ' - %s\n' "${files[@]}"
+          fi
+
+      - name: Run Verilog review
+        if: steps.files.outputs.has_files == 'true'
+        env:
+          VERILOG_REVIEW_API_URL: ${{ secrets.VERILOG_REVIEW_URL }}
+        run: |
+          python scripts/verilog_review.py \
+            --files-list sv-files.txt \
+            --config "${REVIEW_CONFIG}" \
+            --report-path "${REVIEW_REPORT}" \
+            --summary-path "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload review report
+        if: steps.files.outputs.has_files == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: verilog-review-report
+          path: |
+            artifacts/
+            sv-files.txt
+
+
+
