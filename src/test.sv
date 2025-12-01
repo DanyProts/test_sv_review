@@ -69,8 +69,6 @@ TRESHOLD_ALLMOST_FULL) u_fifo_tx_a
     .ALMOST_EMPTY (almost_empty)
 );
 
-
-
 // logic [1:0] emp_al_emp;
 // assign emp_al_emp = {empty, almost_empty};
 
