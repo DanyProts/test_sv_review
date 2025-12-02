@@ -1,6 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/config",
   "api_url": "https://craftily-improving-flamingo.cloudpub.ru/analysis/naming/upload",
+  "timeout": 120,
+  "retries": 3,
   "max_depth": 300,
   "max_nodes": 20000,
   "include_tokens": false,

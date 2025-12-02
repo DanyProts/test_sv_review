@@ -270,14 +270,20 @@ def run_review(args: argparse.Namespace) -> ReviewResult:
         "max_nodes": config.get("max_nodes", 20000),
         "include_tokens": config.get("include_tokens", False),
     }
+    
+    # Таймаут: приоритет у конфига, если он задан, иначе используем аргумент (или дефолт 120)
+    timeout = config.get("timeout") if "timeout" in config else (args.timeout if args.timeout != 30.0 else 120.0)
+    retries = config.get("retries") if "retries" in config else (args.retries if args.retries != 2 else 3)
+    
+    print(f"[verilog-review] Используется таймаут: {timeout}s, повторов: {retries}", file=sys.stderr)
 
     for file_path in files:
         response_text = upload_file(
             api_url=api_url,
             file_path=file_path,
             params=params,
-            timeout=args.timeout,
-            retries=args.retries,
+            timeout=timeout,
+            retries=retries,
         )
         filename, file_violations = parse_response(response_text, rule_map)
         analyzed.append(filename or str(file_path))
@@ -302,7 +308,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--api-url", help="URL эндпоинта /analysis/naming/upload")
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH, help="Путь до .verilog-review.json")
     parser.add_argument("--files-list", required=True, help="Файл со списком путей *.sv")
-    parser.add_argument("--timeout", type=float, default=30.0, help="Таймаут HTTP-запроса, секунды")
+    parser.add_argument("--timeout", type=float, default=30.0, help="Таймаут HTTP-запроса, секунды (по умолчанию из конфига или 120)")
     parser.add_argument("--retries", type=int, default=2, help="Количество повторов при сетевых ошибках")
     parser.add_argument("--report-path", default="artifacts/verilog-review-report.txt", help="Путь полного отчёта")
     parser.add_argument(
