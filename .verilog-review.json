@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/config",
-  "api_url": "https://termly-terrific-bustard.cloudpub.ru/analysis/naming/upload",
+  "api_url": "https://craftily-improving-flamingo.cloudpub.ru/analysis/naming/upload",
   "max_depth": 300,
   "max_nodes": 20000,
   "include_tokens": false,

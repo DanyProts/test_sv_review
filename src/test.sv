@@ -18,6 +18,8 @@ module phy_rmii_to_mii_tx
     mii_tx_if_t OUT_IFP
 );
 
+
+
 logic [7:0] cnt_bit;
 logic [3:0] data_reg;
 logic wr_inc;
