@@ -10,6 +10,8 @@ module detect_4_bit_sequence_using_fsm
   output detected
 );
 
+
+
   // Detection of the "1010" sequence
 
   // States (F — First, S — Second)
