@@ -11,10 +11,6 @@ module detect_4_bit_sequence_using_fsm
 );
 
 
-
-  // Detection of the "1010" sequence
-
-  // States (F — First, S — Second)
   enum logic[2:0]
   {
      IDLE = 3'b000,
